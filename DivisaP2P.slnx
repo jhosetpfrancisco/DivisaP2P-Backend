@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DivisaP2P.Library/DivisaP2P.Library.csproj" />
+  <Project Path="DivisaP2P.WebApi/DivisaP2P.WebApi.csproj" />
+</Solution>

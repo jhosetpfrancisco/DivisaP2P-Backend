@@ -1,0 +1,11 @@
+# Build artifacts
+bin/
+obj/
+*.user
+
+# Visual Studio / Rider
+.vs/
+.idea/
+
+# Rider/EF
+*.DotSettings.user
