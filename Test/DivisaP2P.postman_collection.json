@@ -1,0 +1,392 @@
+{
+  "info": {
+    "name": "DivisaP2P API",
+    "description": "Collection de prueba del backend DivisaP2P (Plataforma P2P de intercambio de divisas - ESAN).\n\nFlujo de uso:\n1. Ejecuta 'Auth > Login'. El token JWT se guarda automaticamente en la variable {{token}} de la collection.\n2. El resto de requests ya envian 'Authorization: Bearer {{token}}' heredado de la collection.\n3. Cambia la variable {{host}} si publicas la API (local vs produccion).\n\nUsuarios de prueba (password: Password1):\n- admin@divisap2p.com (ADM)\n- juan.perez@correo.com / maria.salas@correo.com / pedro.vargas@correo.com (USU)\n- ventas@turismoandino.com (ETU)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "host", "value": "http://localhost:5180", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (guarda el token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    if (data && data.token) {",
+                  "        pm.collectionVariables.set('token', data.token);",
+                  "        console.log('Token guardado en {{token}}');",
+                  "    }",
+                  "}",
+                  "pm.test('Login exitoso (200)', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"maria.salas@correo.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/auth/login",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "auth", "login" ]
+            },
+            "description": "US-002. Devuelve el token JWT. Un script de test lo guarda en la variable {{token}}."
+          }
+        },
+        {
+          "name": "Registro de usuario (US-001)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Nuevo\",\n  \"apellidoPaterno\": \"Usuario\",\n  \"apellidoMaterno\": \"Prueba\",\n  \"correo\": \"nuevo@correo.com\",\n  \"password\": \"Password1\",\n  \"tipoDocumento\": \"DNI\",\n  \"numeroDocumento\": \"44556677\",\n  \"celular\": \"999888777\",\n  \"aceptaTerminos\": true\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/auth/registro",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "auth", "registro" ]
+            },
+            "description": "US-001. Registro de persona natural. La cuenta queda PendienteVerificacion."
+          }
+        },
+        {
+          "name": "Registro de empresa ETU (US-019)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"Turismo Andino SAC\",\n  \"ruc\": \"20123456789\",\n  \"representanteLegal\": \"Ana Torres\",\n  \"correo\": \"contacto@turismoandino.com\",\n  \"password\": \"Password1\",\n  \"celular\": \"988776655\"\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/auth/registro-empresa",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "auth", "registro-empresa" ]
+            },
+            "description": "US-019. Registro de Empresa de Turismo. Queda PendienteAprobacion hasta que un ADM la apruebe."
+          }
+        },
+        {
+          "name": "Verificar correo (US-001)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/auth/verificar/8",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "auth", "verificar", "8" ]
+            },
+            "description": "Simula el clic en el enlace de verificacion. Usa el id devuelto en el registro."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Perfil",
+      "item": [
+        {
+          "name": "Mi perfil (US-003)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/perfil",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "perfil" ]
+            }
+          }
+        },
+        {
+          "name": "Mis cuentas bancarias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/perfil/cuentas",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "perfil", "cuentas" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ofertas",
+      "item": [
+        {
+          "name": "Buscar ofertas con filtros (US-005)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/ofertas?tipoOperacion=Venta&divisa=USD&ordenarPor=tipoCambio&pagina=1&tamanioPagina=10",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "ofertas" ],
+              "query": [
+                { "key": "tipoOperacion", "value": "Venta" },
+                { "key": "divisa", "value": "USD" },
+                { "key": "ordenarPor", "value": "tipoCambio" },
+                { "key": "pagina", "value": "1" },
+                { "key": "tamanioPagina", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publicar oferta (US-004)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoOperacion\": \"Venta\",\n  \"divisaOrigen\": \"USD\",\n  \"divisaDestino\": \"PEN\",\n  \"monto\": 800,\n  \"tipoCambio\": 3.79,\n  \"cuentaBancariaId\": 3\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/ofertas",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "ofertas" ]
+            }
+          }
+        },
+        {
+          "name": "Matching de una oferta (US-007)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/ofertas/1/matches",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "ofertas", "1", "matches" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transacciones",
+      "item": [
+        {
+          "name": "Iniciar transaccion (US-008)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ofertaId\": 1,\n  \"monto\": 500\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/transacciones",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "transacciones" ]
+            }
+          }
+        },
+        {
+          "name": "Reportar pago/entrega + voucher (US-009)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numeroOperacion\": \"OP-12345\",\n  \"fechaDeposito\": \"2026-06-03T14:00:00\",\n  \"nombreArchivo\": \"pago.jpg\",\n  \"rutaArchivo\": \"/uploads/pago.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/transacciones/2/reportar",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "transacciones", "2", "reportar" ]
+            }
+          }
+        },
+        {
+          "name": "Validar deposito (US-010)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aprobar\": true\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/transacciones/2/validar",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "transacciones", "2", "validar" ]
+            }
+          }
+        },
+        {
+          "name": "Historial de transacciones (US-013)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/transacciones?pagina=1&tamanioPagina=20",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "transacciones" ],
+              "query": [
+                { "key": "pagina", "value": "1" },
+                { "key": "tamanioPagina", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calificaciones",
+      "item": [
+        {
+          "name": "Calificar contraparte (US-012)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transaccionId\": 2,\n  \"estrellas\": 5,\n  \"comentario\": \"Excelente\"\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/calificaciones",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "calificaciones" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disputas",
+      "item": [
+        {
+          "name": "Abrir disputa (US-014)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transaccionId\": 2,\n  \"motivo\": \"No recibi la transferencia acordada en el plazo\",\n  \"evidencias\": []\n}"
+            },
+            "url": {
+              "raw": "{{host}}/api/disputas",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "disputas" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones",
+      "item": [
+        {
+          "name": "Bandeja de notificaciones (US-021)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/notificaciones",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "notificaciones" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Requiere login con admin@divisap2p.com (rol ADM).",
+      "item": [
+        {
+          "name": "Dashboard (US-016)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/dashboard",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "admin", "dashboard" ]
+            }
+          }
+        },
+        {
+          "name": "Listar usuarios (US-017)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/usuarios?rol=USU&pagina=1",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "admin", "usuarios" ],
+              "query": [
+                { "key": "rol", "value": "USU" },
+                { "key": "pagina", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Aprobar empresa (US-019)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/empresas/7/aprobar",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "admin", "empresas", "7", "aprobar" ]
+            }
+          }
+        },
+        {
+          "name": "Reporte de transacciones (US-018)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/reportes/transacciones?estado=Completada",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "admin", "reportes", "transacciones" ],
+              "query": [ { "key": "estado", "value": "Completada" } ]
+            }
+          }
+        },
+        {
+          "name": "Exportar reporte a CSV (US-018)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/admin/reportes/transacciones/export",
+              "host": [ "{{host}}" ],
+              "path": [ "api", "admin", "reportes", "transacciones", "export" ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
