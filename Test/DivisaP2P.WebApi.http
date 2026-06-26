@@ -1,0 +1,118 @@
+@host = http://localhost:5180
+
+### Login (devuelve el token JWT). Copia el token en la variable @token.
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "correo": "maria.salas@correo.com", "password": "Password1" }
+
+###
+@token = {{login.response.body.token}}
+
+### Registro de usuario (US-001)
+POST {{host}}/api/auth/registro
+Content-Type: application/json
+
+{
+  "nombres": "Nuevo",
+  "apellidoPaterno": "Usuario",
+  "apellidoMaterno": "Prueba",
+  "correo": "nuevo@correo.com",
+  "password": "Password1",
+  "tipoDocumento": "DNI",
+  "numeroDocumento": "44556677",
+  "celular": "999888777",
+  "aceptaTerminos": true
+}
+
+### Verificar correo (simula el clic del enlace) — usar el id devuelto en el registro
+POST {{host}}/api/auth/verificar/8
+
+### Mi perfil (US-003)
+GET {{host}}/api/perfil
+Authorization: Bearer {{token}}
+
+### Mis cuentas bancarias
+GET {{host}}/api/perfil/cuentas
+Authorization: Bearer {{token}}
+
+### Buscar ofertas con filtros (US-005)
+GET {{host}}/api/ofertas?tipoOperacion=Venta&divisa=USD&ordenarPor=tipoCambio&pagina=1&tamanioPagina=10
+Authorization: Bearer {{token}}
+
+### Publicar oferta (US-004)
+POST {{host}}/api/ofertas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "tipoOperacion": "Venta", "divisaOrigen": "USD", "divisaDestino": "PEN", "monto": 800, "tipoCambio": 3.79, "cuentaBancariaId": 3 }
+
+### Matching de una oferta propia (US-007)
+GET {{host}}/api/ofertas/1/matches
+Authorization: Bearer {{token}}
+
+### Iniciar transacción (US-008)
+POST {{host}}/api/transacciones
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "ofertaId": 1, "monto": 500 }
+
+### Reportar pago/entrega + voucher (US-009)
+POST {{host}}/api/transacciones/2/reportar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "numeroOperacion": "OP-12345", "fechaDeposito": "2026-06-03T14:00:00", "nombreArchivo": "pago.jpg", "rutaArchivo": "/uploads/pago.jpg" }
+
+### Validar depósito (US-010)
+POST {{host}}/api/transacciones/2/validar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "aprobar": true }
+
+### Historial de transacciones (US-013)
+GET {{host}}/api/transacciones?pagina=1&tamanioPagina=20
+Authorization: Bearer {{token}}
+
+### Calificar contraparte (US-012)
+POST {{host}}/api/calificaciones
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "transaccionId": 2, "estrellas": 5, "comentario": "Excelente" }
+
+### Abrir disputa (US-014)
+POST {{host}}/api/disputas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "transaccionId": 2, "motivo": "No recibi la transferencia acordada en el plazo", "evidencias": [] }
+
+### Bandeja de notificaciones (US-021)
+GET {{host}}/api/notificaciones
+Authorization: Bearer {{token}}
+
+### --- ENDPOINTS DE ADMINISTRADOR (login con admin@divisap2p.com) ---
+
+### Dashboard (US-016)
+GET {{host}}/api/admin/dashboard
+Authorization: Bearer {{token}}
+
+### Listar usuarios (US-017)
+GET {{host}}/api/admin/usuarios?rol=USU&pagina=1
+Authorization: Bearer {{token}}
+
+### Aprobar empresa (US-019)
+POST {{host}}/api/admin/empresas/7/aprobar
+Authorization: Bearer {{token}}
+
+### Reporte de transacciones (US-018)
+GET {{host}}/api/admin/reportes/transacciones?estado=Completada
+Authorization: Bearer {{token}}
+
+### Exportar reporte a CSV (US-018)
+GET {{host}}/api/admin/reportes/transacciones/export
+Authorization: Bearer {{token}}
