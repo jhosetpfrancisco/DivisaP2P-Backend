@@ -4,8 +4,8 @@ Plataforma P2P de intercambio de divisas. Backend del Proyecto del Curso de **De
 
 ## Stack
 - **ASP.NET Core Web API — .NET 10**
-- **SQL Server** (probado en LocalDB) — enfoque Database-First
-- **Entity Framework Core 10** (SqlServer)
+- **PostgreSQL** (probado en Docker, pg17) — enfoque Database-First
+- **Entity Framework Core 10** (Npgsql)
 - **JWT** (autenticación) + **BCrypt** (hash de contraseñas)
 
 ## Estructura de la solución (`DivisaP2P.slnx`)
@@ -27,7 +27,8 @@ DivisaP2P.WebApi/               Capa de presentación (Web API)
   Program.cs     DI, JWT, CORS, pipeline
 
 Database/
-  01_CreateDatabase.sql        Script de creación de BD + datos de ejemplo (dummy)
+  01_CreateDatabase_PostgreSQL.sql  Script de creación de esquema + datos de ejemplo (PostgreSQL)
+  01_CreateDatabase.sql             Script equivalente para SQL Server (legado / referencia)
 ```
 
 Arquitectura en capas: **Controller → Service (interfaz) → Repository (interfaz) → DbContext**.
@@ -35,13 +36,17 @@ Los controladores no conocen el `DbContext`; dependen de interfaces inyectadas.
 
 ## Puesta en marcha
 
-### 1. Crear la base de datos
-Ejecuta el script en tu SQL Server local:
+### 1. Crear la base de datos (PostgreSQL)
+Levanta un PostgreSQL local. Ejemplo con Docker:
 ```powershell
-sqlcmd -S "(localdb)\MSSQLLocalDB" -i Database\01_CreateDatabase.sql
+docker run -d --name divisap2p-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=DivisaP2PDB -p 5432:5432 postgres:17
 ```
-> Si usas otra instancia, ajusta la cadena de conexión `DivisaP2PDB` en
-> `DivisaP2P.WebApi/appsettings.json`.
+Carga el esquema + datos de ejemplo:
+```powershell
+docker exec -i divisap2p-postgres psql -U postgres -d DivisaP2PDB < Database\01_CreateDatabase_PostgreSQL.sql
+```
+> Si usas otro host/puerto/usuario/clave, ajusta la cadena de conexión
+> `DivisaP2PDB` en `DivisaP2P.WebApi/appsettings.json`.
 
 ### 2. Levantar la API
 ```powershell
