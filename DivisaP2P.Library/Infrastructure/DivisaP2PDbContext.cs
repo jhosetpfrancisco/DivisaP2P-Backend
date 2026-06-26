@@ -8,7 +8,7 @@ namespace DivisaP2P.Library.Infrastructure;
 /// <summary>
 /// DbContext de la plataforma P2P de intercambio de divisas.
 /// Enfoque Database-First: el mapeo fluido refleja el esquema definido en
-/// Database/01_CreateDatabase.sql.
+/// Database/01_CreateDatabase_PostgreSQL.sql.
 /// </summary>
 public partial class DivisaP2PDbContext : DbContext
 {

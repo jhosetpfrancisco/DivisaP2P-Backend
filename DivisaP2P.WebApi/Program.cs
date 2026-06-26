@@ -12,9 +12,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------- Base de datos (SQL Server) ----------
+// PostgreSQL: trata DateTime como 'timestamp without time zone' (sin exigir UTC),
+// comportamiento equivalente al datetime2 de SQL Server. Debe configurarse antes
+// de construir el DbContext / DataSource de Npgsql.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// ---------- Base de datos (PostgreSQL) ----------
 builder.Services.AddDbContext<DivisaP2PDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DivisaP2PDB")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DivisaP2PDB")));
 
 // ---------- Configuración JWT ----------
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()!;
